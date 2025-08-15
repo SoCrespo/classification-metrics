@@ -122,7 +122,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Header with emoji and better styling
-st.markdown("<h1 class='stTitle'>🎯 AI Classifier Metrics Dashboard</h1>", unsafe_allow_html=True)
+st.markdown("<h1 class='stTitle'> AI Classifier Metrics Dashboard</h1>", unsafe_allow_html=True)
 
 # Sidebar styling
 sidebar = st.sidebar
@@ -257,8 +257,7 @@ if file:
                             filtered = df[df[category_col] == cat]
                             display_matrix_and_metrics(filtered, truth_col, pred_col, beta, cat)
                 else:
-                    st.markdown("## 🎯 **Overall Classification Results**")
-                    st.caption(f"📊 Analyzing complete dataset with {len(df):,} samples")
+                    st.markdown("## 📊 **Overall Classification Results**")
                     display_matrix_and_metrics(df, truth_col, pred_col, beta)
                     
     except Exception as e:

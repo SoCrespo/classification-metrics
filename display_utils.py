@@ -5,11 +5,13 @@ from metrics import BinaryMetricsResult, compute_binary_metrics
 from plots import plot_confusion_matrix
 
 
-def create_metric_card(title: str, value: float | int, color: str, description: str = ""):
+def create_metric_card(title: str, value: float | int, color: str, description: str = "", format_as_percentage: bool = False):
     """Create a professional metric card with styling."""
-    # Format value based on type
+    # Format value based on type and percentage preference
     if isinstance(value, int):
         formatted_value = f"{value:,}"
+    elif format_as_percentage:
+        formatted_value = f"{value * 100:.1f}%"
     else:
         formatted_value = f"{value:.3f}"
     
@@ -23,11 +25,11 @@ def create_metric_card(title: str, value: float | int, color: str, description: 
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         margin: 0.5rem 0;
     '>
-        <div style='color: {color}; font-size: 2.2rem; font-weight: bold; margin-bottom: 0.3rem;'>
-            {formatted_value}
-        </div>
         <div style='color: #2c3e50; font-size: 1rem; font-weight: 600; margin-bottom: 0.3rem;'>
             {title}
+        </div>
+        <div style='color: {color}; font-size: 2.2rem; font-weight: bold; margin-bottom: 0.3rem;'>
+            {formatted_value}
         </div>
         <div style='color: #7f8c8d; font-size: 0.85rem; line-height: 1.3;'>
             {description}
@@ -45,7 +47,6 @@ def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col:
     col1, col2 = st.columns([2, 1], gap="large")
     
     with col1:
-        st.markdown("### 🎯 **Confusion Matrix**")
         
         # Enhanced confusion matrix
         message = f'Classification Matrix: {category}' if category else 'Classification Matrix'
@@ -83,7 +84,6 @@ def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col:
         )
     
     with col2:
-        st.markdown("### 📊 **Performance Metrics**")
         
         # Enhanced metrics cards - starting with sample count
         total_samples = len(filtered)
@@ -101,28 +101,32 @@ def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col:
             "Accuracy", 
             accuracy, 
             "#f39c12",
-            "Documents correctly classified"
+            "Documents correctly classified",
+            format_as_percentage=True
         )}
         
         {create_metric_card(
             "Precision", 
             result.precision, 
             "#2ecc71",
-            "Of predicted positives, how many were correct?"
+            "Of predicted positives, how many were correct?",
+            format_as_percentage=True
         )}
         
         {create_metric_card(
             "Recall", 
             result.recall, 
             "#3498db", 
-            "Of actual positives, how many were found?"
+            "Of actual positives, how many were found?",
+            format_as_percentage=True
         )}
         
         {create_metric_card(
             f"F{beta:.1f}-Score", 
             result.fbeta_score, 
             "#9b59b6",
-            f"Balanced metric (β={beta:.1f})"
+            f"Balanced metric (β={beta:.1f})",
+            format_as_percentage=True
         )}
         """
         
