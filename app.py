@@ -26,6 +26,7 @@ if file:
 
     unique_categories = sorted(df['category'].unique()) if 'category' in df.columns else []
     selected_cats = sidebar.multiselect('Select categories to evaluate (leave empty for all)', unique_categories)
+    sidebar.write("Select a beta value < 1 to penalize false positives more heavily")
     beta = sidebar.number_input('Beta value for F-beta score', min_value=0.1, max_value=5.0, value=1.0, step=0.1)
 
     if sidebar.button('Compute Metrics'):
@@ -34,24 +35,32 @@ if file:
                 filtered = df[df['category'] == cat]
                 result: BinaryMetricsResult = compute_binary_metrics(filtered[truth_col], filtered[pred_col], beta)
                 st.subheader(f'Category: {cat}')
-                st.write('Confusion Matrix:')
-                st.write(pd.DataFrame(result.confusion_matrix, columns=['Pred 0', 'Pred 1'], index=['True 0', 'True 1']))
-                st.write({
-                    'precision': result.precision,
-                    'recall': result.recall,
-                    f'f{beta}_score': result.fbeta_score
-                })
-                fig = plot_confusion_matrix(result.confusion_matrix, [0, 1], f'Confusion Matrix: {cat}')
-                st.pyplot(fig)
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.write('Confusion Matrix:')
+                    fig = plot_confusion_matrix(result.confusion_matrix, [0, 1], f'Confusion Matrix: {cat}')
+                    st.pyplot(fig)
+                with col2:
+                    st.write('Metrics:')
+                    st.write({
+                        'precision': result.precision,
+                        'recall': result.recall,
+                        f'fβ={beta} score': result.fbeta_score
+                    })
         else:
             result: BinaryMetricsResult = compute_binary_metrics(df[truth_col], df[pred_col], beta)
             st.subheader('Overall Metrics')
-            st.write('Confusion Matrix:')
-            st.write(pd.DataFrame(result.confusion_matrix, columns=['Pred 0', 'Pred 1'], index=['True 0', 'True 1']))
-            st.write({
-                'precision': result.precision,
-                'recall': result.recall,
-                f'f{beta}_score': result.fbeta_score
-            })
-            fig = plot_confusion_matrix(result.confusion_matrix, [0, 1], 'Overall Confusion Matrix')
-            st.pyplot(fig)
+            col1, col2 = st.columns(2)
+            with col1:
+                st.write('Confusion Matrix:')
+                fig = plot_confusion_matrix(result.confusion_matrix, [0, 1], 'Overall Confusion Matrix')
+                st.pyplot(fig)
+            with col2:
+                st.write('Metrics:')
+                st.write({
+                    'precision': result.precision,
+                    'recall': result.recall,
+                    f'fβ={beta} score': result.fbeta_score
+                })
+
+
