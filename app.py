@@ -7,8 +7,10 @@ from plots import plot_confusion_matrix
 
 st.title('Classification Metrics App')
 
-st.write('Upload a CSV or Excel file with your predictions and ground truth.')
-file = st.file_uploader('Upload file', type=['csv', 'xlsx'])
+sidebar = st.sidebar
+
+sidebar.write('Upload a CSV or Excel file with your predictions and ground truth.')
+file = sidebar.file_uploader('Upload file', type=['csv', 'xlsx'])
 
 if file:
     if file.name.endswith('.csv'):
@@ -18,15 +20,15 @@ if file:
     st.write('Preview:', df.head())
 
     columns = df.columns.tolist()
-    doc_id_col = st.selectbox('Select document ID column', columns)
-    truth_col = st.selectbox('Select ground truth column', columns)
-    pred_col = st.selectbox('Select predicted value column', columns)
+    doc_id_col = sidebar.selectbox('Select document ID column', columns)
+    truth_col = sidebar.selectbox('Select ground truth column', columns)
+    pred_col = sidebar.selectbox('Select predicted value column', columns)
 
     unique_categories = sorted(df['category'].unique()) if 'category' in df.columns else []
-    selected_cats = st.multiselect('Select categories to evaluate (leave empty for all)', unique_categories)
-    beta = st.number_input('Beta value for F-beta score', min_value=0.1, max_value=5.0, value=1.0, step=0.1)
+    selected_cats = sidebar.multiselect('Select categories to evaluate (leave empty for all)', unique_categories)
+    beta = sidebar.number_input('Beta value for F-beta score', min_value=0.1, max_value=5.0, value=1.0, step=0.1)
 
-    if st.button('Compute Metrics'):
+    if sidebar.button('Compute Metrics'):
         if selected_cats:
             for cat in selected_cats:
                 filtered = df[df['category'] == cat]
