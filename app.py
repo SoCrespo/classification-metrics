@@ -115,23 +115,6 @@ if file:
         else:
             df = pd.read_excel(file)
         
-        # Success message with styling
-        st.markdown("""
-        <div class='success-box'>
-            ✅ <strong>File uploaded successfully!</strong><br>
-            <small>Data loaded and ready for analysis</small>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Data preview with enhanced styling
-        with st.expander("📊 **Data Preview**", expanded=True):
-            st.dataframe(
-                df.head(10), 
-                use_container_width=True,
-                hide_index=True
-            )
-            st.caption(f"📈 Dataset contains **{len(df):,}** rows and **{len(df.columns)}** columns")
-
         # Column selection with enhanced UI
         sidebar.markdown("---")
         sidebar.markdown("### ⚙️ Column Configuration")
@@ -206,6 +189,24 @@ if file:
             use_container_width=True,
             help="Click to calculate classification metrics and generate visualizations"
         )
+
+        if not compute_button:
+            # Success message with styling - only show when compute button not clicked
+            st.markdown("""
+            <div class='success-box'>
+                ✅ <strong>File uploaded successfully!</strong><br>
+                <small>Data loaded and ready for analysis</small>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Data preview with enhanced styling - only show when compute button not clicked
+            with st.expander("📊 **Data Preview**", expanded=True):
+                st.dataframe(
+                    df.head(10), 
+                    use_container_width=True,
+                    hide_index=True
+                )
+                st.caption(f"📈 Dataset contains **{len(df):,}** rows and **{len(df.columns)}** columns")
 
         if compute_button:
             with st.spinner('🔄 Computing classification metrics...'):
