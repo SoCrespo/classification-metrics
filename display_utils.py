@@ -1,21 +1,150 @@
-import streamlit as st
 import pandas as pd
+import streamlit as st
 
 from metrics import BinaryMetricsResult, compute_binary_metrics
 from plots import plot_confusion_matrix
 
 
+def create_metric_card(title: str, value: float | int, color: str, description: str = ""):
+    """Create a professional metric card with styling."""
+    # Format value based on type
+    if isinstance(value, int):
+        formatted_value = f"{value:,}"
+    else:
+        formatted_value = f"{value:.3f}"
+    
+    return f"""
+    <div style='
+        background: linear-gradient(135deg, {color}20, {color}10);
+        border: 1px solid {color}40;
+        border-radius: 12px;
+        padding: 1.2rem;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin: 0.5rem 0;
+    '>
+        <div style='color: {color}; font-size: 2.2rem; font-weight: bold; margin-bottom: 0.3rem;'>
+            {formatted_value}
+        </div>
+        <div style='color: #2c3e50; font-size: 1rem; font-weight: 600; margin-bottom: 0.3rem;'>
+            {title}
+        </div>
+        <div style='color: #7f8c8d; font-size: 0.85rem; line-height: 1.3;'>
+            {description}
+        </div>
+    </div>
+    """
+
 
 def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col: str, beta: float, category: str | None = None):
+    """Display confusion matrix and metrics with enhanced professional styling."""
+    
     result: BinaryMetricsResult = compute_binary_metrics(filtered[truth_col], filtered[pred_col], beta)
-    col1, col2 = st.columns([3, 1])
+    
+    # Create main layout
+    st.markdown("---")
+    
+    # Header section with category info
+    if category:
+        st.markdown(f"""
+        <div style='
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        '>
+            <h3 style='margin: 0; color: white;'>📊 Analysis Results for: {category}</h3>
+            <p style='margin: 0.5rem 0 0 0; opacity: 0.9;'>Classification Performance Metrics</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Main content in columns
+    col1, col2 = st.columns([2, 1], gap="large")
+    
     with col1:
-        st.write('### Confusion Matrix')
-        message = f'Confusion Matrix: {category}' if category else 'Confusion Matrix'
+        st.markdown("### 🎯 **Confusion Matrix**")
+        
+        # Enhanced confusion matrix
+        message = f'Classification Matrix: {category}' if category else 'Classification Matrix'
         fig = plot_confusion_matrix(result.confusion_matrix, [0, 1], message)
-        st.pyplot(fig)
+        st.pyplot(fig, use_container_width=True)
+        
+        # Confusion matrix interpretation
+        cm = result.confusion_matrix
+        tn, fp, fn, tp = cm[0][0], cm[0][1], cm[1][0], cm[1][1]
+        
+        st.markdown("### 📋 **Matrix Breakdown**")
+        
+        # Create a small interpretation table
+        matrix_data = {
+            "Metric": ["True Negatives (TN)", "False Positives (FP)", "False Negatives (FN)", "True Positives (TP)"],
+            "Count": [int(tn), int(fp), int(fn), int(tp)],
+            "Description": [
+                "Correctly predicted as negative",
+                "Incorrectly predicted as positive", 
+                "Incorrectly predicted as negative",
+                "Correctly predicted as positive"
+            ]
+        }
+        
+        matrix_df = pd.DataFrame(matrix_data)
+        st.dataframe(
+            matrix_df,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Metric": st.column_config.TextColumn("Metric", width="medium"),
+                "Count": st.column_config.NumberColumn("Count", width="small"),
+                "Description": st.column_config.TextColumn("Description", width="large")
+            }
+        )
+    
     with col2:
-        st.write('### Metrics')
-        st.write(f'Precision: {result.precision:.2f}')
-        st.write(f'Recall: {result.recall:.2f}')
-        st.write(f'F-β score: {result.fbeta_score:.2f}')
+        st.markdown("### 📊 **Performance Metrics**")
+        
+        # Enhanced metrics cards - starting with sample count
+        total_samples = len(filtered)
+        accuracy = (tp + tn) / total_samples
+        
+        metrics_html = f"""
+        {create_metric_card(
+            "Sample Count", 
+            total_samples, 
+            "#34495e",
+            "Total number of samples analyzed"
+        )}
+        
+        {create_metric_card(
+            "Accuracy", 
+            accuracy, 
+            "#f39c12",
+            "Documents correctly classified"
+        )}
+        
+        {create_metric_card(
+            "Precision", 
+            result.precision, 
+            "#2ecc71",
+            "Of predicted positives, how many were correct?"
+        )}
+        
+        {create_metric_card(
+            "Recall", 
+            result.recall, 
+            "#3498db", 
+            "Of actual positives, how many were found?"
+        )}
+        
+        {create_metric_card(
+            f"F{beta:.1f}-Score", 
+            result.fbeta_score, 
+            "#9b59b6",
+            f"Balanced metric (β={beta:.1f})"
+        )}
+        """
+        
+        st.markdown(metrics_html, unsafe_allow_html=True)
+    
+    st.markdown("---")
