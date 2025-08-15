@@ -219,7 +219,6 @@ if file:
                     for i, cat in enumerate(selected_cats):
                         with tabs[i]:
                             filtered = df[df[category_col] == cat]
-                            st.markdown(f"### Analysis for Category: **{cat}**")
                             st.caption(f"📊 Analyzing {len(filtered):,} samples in this category")
                             display_matrix_and_metrics(filtered, truth_col, pred_col, beta, cat)
                 else:
