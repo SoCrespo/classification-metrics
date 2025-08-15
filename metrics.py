@@ -22,7 +22,7 @@ def compute_binary_metrics(
     Compute confusion matrix, precision, recall, and f-beta score for binary classification.
     y_true and y_pred should be boolean or 0/1 arrays/Series.
     """
-    cm = confusion_matrix(y_true, y_pred, labels=[0, 1])
+    cm = confusion_matrix(y_true, y_pred)
     precision = precision_score(y_true, y_pred, zero_division=0)
     recall = recall_score(y_true, y_pred, zero_division=0)
     fbeta = fbeta_score(y_true, y_pred, beta=beta, zero_division=0)

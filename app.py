@@ -1,4 +1,3 @@
-
 import pandas as pd
 import streamlit as st
 
@@ -81,6 +80,43 @@ st.markdown("""
         border-radius: 8px;
         border-left: 4px solid #4caf50;
         margin: 1rem 0;
+    }
+    
+    /* Enhanced tab styling */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        height: 60px !important;
+        background-color: white;
+        border-radius: 8px;
+        border: 2px solid #e1e5e9;
+        padding: 12px 24px !important;
+        font-weight: 600 !important;
+        font-size: 16px !important;
+        color: #2c3e50 !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        min-width: 120px;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #667eea, #764ba2) !important;
+        color: white !important;
+        border-color: #667eea !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+    }
+    
+    .stTabs [data-baseweb="tab"]:hover {
+        border-color: #667eea;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 6px rgba(0,0,0,0.15);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -219,7 +255,6 @@ if file:
                     for i, cat in enumerate(selected_cats):
                         with tabs[i]:
                             filtered = df[df[category_col] == cat]
-                            st.caption(f"📊 Analyzing {len(filtered):,} samples in this category")
                             display_matrix_and_metrics(filtered, truth_col, pred_col, beta, cat)
                 else:
                     st.markdown("## 🎯 **Overall Classification Results**")
@@ -266,5 +301,3 @@ else:
     - **📊 Key Metrics** - Precision, Recall, and F-β scores
     - **📂 Category Analysis** - Detailed breakdown by different groups
     """)
-
-

@@ -41,25 +41,6 @@ def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col:
     
     result: BinaryMetricsResult = compute_binary_metrics(filtered[truth_col], filtered[pred_col], beta)
     
-    # Create main layout
-    st.markdown("---")
-    
-    # Header section with category info
-    if category:
-        st.markdown(f"""
-        <div style='
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            color: white;
-            padding: 1rem;
-            border-radius: 10px;
-            margin-bottom: 1.5rem;
-            text-align: center;
-        '>
-            <h3 style='margin: 0; color: white;'>📊 Analysis Results for: {category}</h3>
-            <p style='margin: 0.5rem 0 0 0; opacity: 0.9;'>Classification Performance Metrics</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
     # Main content in columns
     col1, col2 = st.columns([2, 1], gap="large")
     
@@ -82,10 +63,10 @@ def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col:
             "Metric": ["True Negatives (TN)", "False Positives (FP)", "False Negatives (FN)", "True Positives (TP)"],
             "Count": [int(tn), int(fp), int(fn), int(tp)],
             "Description": [
-                "Correctly predicted as negative",
-                "Incorrectly predicted as positive", 
-                "Incorrectly predicted as negative",
-                "Correctly predicted as positive"
+                "Correctly rejected (predicted as wrong category)",
+                "Incorrectly accepted (predicted as good category)", 
+                "Incorrectly rejected (predicted as wrong category)",
+                "Correctly accepted (predicted as good category)"
             ]
         }
         
