@@ -261,9 +261,9 @@ if file:
                     display_matrix_and_metrics(df, truth_col, pred_col, beta)
                     
     except Exception as e:
-        st.error(f"❌ **Error processing file**: {str(e)}")
-        st.info("💡 Please ensure your file has the correct format and contains the expected columns.")
-        
+        st.error(f"❌ **Error processing file**")
+        st.info("💡 Please ensure your data has the correct format and that columns are properly selected in Column Configuration.")
+
 else:
     # Add description when no file is uploaded
     st.markdown("""
