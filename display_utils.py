@@ -43,14 +43,13 @@ def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col:
     
     result: BinaryMetricsResult = compute_binary_metrics(filtered[truth_col], filtered[pred_col], beta)
     
-    # Main content in columns
-    col1, col2 = st.columns([2, 1], gap="large")
+    # Main content in two equal columns
+    col2, col1 = st.columns([1, 1], gap="large")
     
     with col1:
         
         # Enhanced confusion matrix
-        message = f'Classification Matrix: {category}' if category else 'Classification Matrix'
-        fig = plot_confusion_matrix(result.confusion_matrix, [0, 1], message)
+        fig = plot_confusion_matrix(result.confusion_matrix, [0, 1])
         st.pyplot(fig, use_container_width=True)
         
         # Confusion matrix interpretation
@@ -85,51 +84,57 @@ def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col:
     
     with col2:
         
-        # Enhanced metrics cards - starting with sample count
+        # Sample count card (full width)
         total_samples = len(filtered)
         accuracy = (tp + tn) / total_samples
         
-        metrics_html = f"""
-        {create_metric_card(
+        sample_count_html = create_metric_card(
             "Sample Count", 
             total_samples, 
             "#34495e",
             "Total number of samples analyzed"
-        )}
+        )
+        st.markdown(sample_count_html, unsafe_allow_html=True)
         
-        {create_metric_card(
-            "Accuracy", 
-            accuracy, 
-            "#f39c12",
-            "Documents correctly classified",
-            format_as_percentage=True
-        )}
+        # 2x2 grid of metric cards
+        metric_col1, metric_col2 = st.columns(2, gap="small")
         
-        {create_metric_card(
-            "Precision", 
-            result.precision, 
-            "#2ecc71",
-            "Of predicted positives, how many were correct?",
-            format_as_percentage=True
-        )}
+        with metric_col1:
+            accuracy_html = create_metric_card(
+                "Accuracy", 
+                accuracy, 
+                "#f39c12",
+                "Correctly classified",
+                format_as_percentage=True
+            )
+            st.markdown(accuracy_html, unsafe_allow_html=True)
+            
+            recall_html = create_metric_card(
+                "Recall", 
+                result.recall, 
+                "#3498db", 
+                "Of actual positives found",
+                format_as_percentage=True
+            )
+            st.markdown(recall_html, unsafe_allow_html=True)
         
-        {create_metric_card(
-            "Recall", 
-            result.recall, 
-            "#3498db", 
-            "Of actual positives, how many were found?",
-            format_as_percentage=True
-        )}
-        
-        {create_metric_card(
-            f"F{beta:.1f}-Score", 
-            result.fbeta_score, 
-            "#9b59b6",
-            f"Balanced metric (β={beta:.1f})",
-            format_as_percentage=True
-        )}
-        """
-        
-        st.markdown(metrics_html, unsafe_allow_html=True)
+        with metric_col2:
+            precision_html = create_metric_card(
+                "Precision", 
+                result.precision, 
+                "#2ecc71",
+                "Of predicted positives correct",
+                format_as_percentage=True
+            )
+            st.markdown(precision_html, unsafe_allow_html=True)
+            
+            fbeta_html = create_metric_card(
+                f"F{beta:.1f}-Score", 
+                result.fbeta_score, 
+                "#9b59b6",
+                f"Balanced metric (β={beta:.1f})",
+                format_as_percentage=True
+            )
+            st.markdown(fbeta_html, unsafe_allow_html=True)
     
     st.markdown("---")

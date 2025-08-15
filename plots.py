@@ -5,7 +5,7 @@ import numpy as np
 import seaborn as sns
 
 
-def plot_confusion_matrix(cm, categories: list[Any], title: str = 'Confusion Matrix'):
+def plot_confusion_matrix(cm, categories: list[Any]):
     """Create a professional-looking confusion matrix plot."""
     
     # Set up the figure with better styling
@@ -38,7 +38,6 @@ def plot_confusion_matrix(cm, categories: list[Any], title: str = 'Confusion Mat
     # Enhance the plot aesthetics
     plt.xlabel('Predicted Labels', fontsize=13, fontweight='bold', labelpad=10)
     plt.ylabel('True Labels', fontsize=13, fontweight='bold', labelpad=10)
-    plt.title(title, fontsize=16, fontweight='bold', pad=20)
     
     # Customize tick labels
     ax.set_xticklabels(ax.get_xticklabels(), rotation=0, ha='center', fontweight='bold')
