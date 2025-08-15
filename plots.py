@@ -1,11 +1,11 @@
-from typing import Any, List
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
 
-def plot_confusion_matrix(cm, categories: List[Any], title: str = 'Confusion Matrix'):
+def plot_confusion_matrix(cm, categories: list[Any], title: str = 'Confusion Matrix'):
     """Create a professional-looking confusion matrix plot."""
     
     # Set up the figure with better styling
@@ -28,7 +28,7 @@ def plot_confusion_matrix(cm, categories: List[Any], title: str = 'Confusion Mat
         cmap='Blues',
         xticklabels=categories, 
         yticklabels=categories,
-        cbar_kws={'label': 'Count'},
+        cbar=False,
         annot_kws={'size': 16, 'weight': 'bold'},
         linewidths=2,
         linecolor='white',
