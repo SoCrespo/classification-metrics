@@ -88,15 +88,6 @@ st.markdown("""
 # Header with emoji and better styling
 st.markdown("<h1 class='stTitle'>🎯 AI Classifier Metrics Dashboard</h1>", unsafe_allow_html=True)
 
-# Add description
-st.markdown("""
-<div class='info-box'>
-    <strong>📊 Professional Classification Analysis Tool</strong><br>
-    Upload your classification results and get comprehensive metrics analysis with beautiful visualizations.
-    Perfect for evaluating machine learning model performance.
-</div>
-""", unsafe_allow_html=True)
-
 # Sidebar styling
 sidebar = st.sidebar
 sidebar.markdown("### 📁 Data Upload & Configuration")
@@ -240,6 +231,14 @@ if file:
         st.info("💡 Please ensure your file has the correct format and contains the expected columns.")
         
 else:
+    # Add description when no file is uploaded
+    st.markdown("""
+    <div class='info-box'>
+        <strong>📊 Classification Analysis Tool</strong><br>
+        Upload your classification results and get metrics analysis and visualizations.
+    </div>
+    """, unsafe_allow_html=True)
+    
     # Instructions when no file is uploaded
     st.markdown("""
     ## 🚀 **Get Started**
