@@ -226,11 +226,17 @@ if df is not None:
             if category_col != 'None' and selected_cats:
                 st.markdown("## 📊 **Category-wise Analysis Results**")
                 
-                # Create tabs for each category
-                tabs = st.tabs([f"📂 {cat}" for cat in selected_cats])
+                # Create tabs for "All Categories" plus each individual category
+                tab_names = ["📈 All Categories"] + [f"📂 {cat}" for cat in selected_cats]
+                tabs = st.tabs(tab_names)
                 
+                # First tab: All Categories (overall results)
+                with tabs[0]:
+                    display_matrix_and_metrics(df, truth_col, pred_col, beta, "All Categories")
+                
+                # Remaining tabs: Individual categories
                 for i, cat in enumerate(selected_cats):
-                    with tabs[i]:
+                    with tabs[i + 1]:
                         filtered = df[df[category_col] == cat]
                         display_matrix_and_metrics(filtered, truth_col, pred_col, beta, cat)
             else:
