@@ -1,8 +1,57 @@
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 
 from display_utils import display_matrix_and_metrics
 from generate_sample import generate_sample
+from style import BETA_ZONE, MAIN_CSS, SIDEBAR_CSS
+
+
+# Function to scroll to column configuration section
+def scroll_to_column_config():
+    """Scroll to the column configuration section in the sidebar"""
+    scroll_script = """
+    <script>
+    setTimeout(function() {
+        // Try multiple selectors to find the column configuration section
+        const selectors = [
+            '[data-testid="stSidebar"] #column-config-anchor',
+            '[data-testid="stSidebar"] h3:contains("⚙️ Column Configuration")',
+            '[data-testid="stSidebar"] h3:contains("Column Configuration")',
+            '[data-testid="stSidebar"] .element-container:has(h3:contains("Column Configuration"))'
+        ];
+        
+        let element = null;
+        for (let selector of selectors) {
+            try {
+                if (selector.includes(':contains')) {
+                    // Handle :contains selector manually
+                    const h3Elements = parent.document.querySelectorAll('[data-testid="stSidebar"] h3');
+                    for (let h3 of h3Elements) {
+                        if (h3.textContent.includes('Column Configuration')) {
+                            element = h3;
+                            break;
+                        }
+                    }
+                } else {
+                    element = parent.document.querySelector(selector);
+                }
+                if (element) break;
+            } catch(e) {
+                continue;
+            }
+        }
+        
+        if (element) {
+            element.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    }, 500);
+    </script>
+    """
+    components.html(scroll_script, height=0)
 
 # Page configuration
 st.set_page_config(
@@ -12,132 +61,13 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for better styling
-st.markdown("""
-<style>
-    .main {
-        padding-top: 1rem;
-    }
-    
-    .stTitle {
-        color: #1f77b4;
-        font-size: 2.5rem !important;
-        text-align: center;
-        margin-bottom: 2rem;
-        font-weight: 600;
-    }
-    
-    .stSubheader {
-        color: #2c3e50;
-        border-bottom: 2px solid #3498db;
-        padding-bottom: 0.5rem;
-        margin-bottom: 1rem;
-    }
-    
-    .metric-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 1rem;
-        border-radius: 10px;
-        color: white;
-        text-align: center;
-        margin: 0.5rem 0;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    
-    .metric-value {
-        font-size: 2rem;
-        font-weight: bold;
-        margin-bottom: 0.5rem;
-    }
-    
-    .metric-label {
-        font-size: 0.9rem;
-        opacity: 0.9;
-    }
-    
-    .sidebar .sidebar-content {
-        background: #f8f9fa;
-    }
-    
-    .upload-section {
-        background: #f8f9fa;
-        padding: 1.5rem;
-        border-radius: 10px;
-        border-left: 4px solid #3498db;
-        margin-bottom: 1rem;
-    }
-    
-    .info-box {
-        background: #e8f4fd;
-        padding: 1rem;
-        border-radius: 8px;
-        border-left: 4px solid #2196f3;
-        margin: 1rem 0;
-    }
-    
-    .success-box {
-        background: #e8f5e8;
-        padding: 1rem;
-        border-radius: 8px;
-        border-left: 4px solid #4caf50;
-        margin: 1rem 0;
-    }
-    
-    /* Enhanced tab styling */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-        background-color: #f8f9fa;
-        border-radius: 10px;
-        padding: 10px;
-        margin-bottom: 20px;
-    }
-    
-    .stTabs [data-baseweb="tab"] {
-        height: 60px !important;
-        background-color: white;
-        border-radius: 8px;
-        border: 2px solid #e1e5e9;
-        padding: 12px 24px !important;
-        font-weight: 600 !important;
-        font-size: 16px !important;
-        color: #2c3e50 !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        transition: all 0.3s ease;
-        min-width: 120px;
-    }
-    
-    .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #667eea, #764ba2) !important;
-        color: white !important;
-        border-color: #667eea !important;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
-    }
-    
-    .stTabs [data-baseweb="tab"]:hover {
-        border-color: #667eea;
-        transform: translateY(-1px);
-        box-shadow: 0 3px 6px rgba(0,0,0,0.15);
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# Header with emoji and better styling
+st.markdown(MAIN_CSS, unsafe_allow_html=True)
 st.markdown("<h1 class='stTitle'> AI Classifier Metrics Dashboard</h1>", unsafe_allow_html=True)
-
-# Sidebar styling
 sidebar = st.sidebar
 sidebar.markdown("### 📁 Data Upload & Configuration")
 
-# File upload section with better styling
-sidebar.markdown("""
-<div style='background: #f0f2f6; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;'>
-    <p style='margin: 0; color: #2c3e50;'>
-        📤 <strong>Upload Your Data</strong><br>
-        <small>Supported formats: CSV, Excel (.xlsx)</small>
-    </p>
-</div>
-""", unsafe_allow_html=True)
+# File upload 
+sidebar.markdown(SIDEBAR_CSS, unsafe_allow_html=True)
 
 file = sidebar.file_uploader(
     'Choose your classification results file', 
@@ -145,42 +75,57 @@ file = sidebar.file_uploader(
     help="Upload a CSV or Excel file containing your predictions and ground truth data"
 )
 
-# Fake data generation section
+# Toggle button for fake data generation
 sidebar.markdown("---")
-sidebar.markdown("""
-<div style='background: #e8f5e8; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;'>
-    <p style='margin: 0; color: #2c3e50;'>
-        🎲 <strong>Or Generate Fake Data</strong><br>
-        <small>Create sample data for testing</small>
-    </p>
-</div>
-""", unsafe_allow_html=True)
-
-# Input fields for fake data generation
-num_lines = sidebar.number_input(
-    '📊 Number of lines',
-    min_value=10,
-    value=1000,
-    step=1000,
-    help="Number of rows to generate in the sample dataset"
-)
-
-num_categories = sidebar.number_input(
-    '🏷️ Number of categories',
-    min_value=2,
-    max_value=20,
-    value=5,
-    step=1,
-    help="Number of different categories to include in the dataset"
-)
-
-# Generate and load button
-generate_button = sidebar.button(
-    '🎲 Generate and Load',
+button_text = "🎲 Generate fake data instead" if not st.session_state.get('show_fake_data_section', False) else "❌ Hide fake data options"
+show_fake_data = sidebar.button(
+    button_text,
     type="secondary",
     use_container_width=True,
-    help="Generate fake data with specified parameters and load it for analysis"
+    help="click to generate random sample data for testing" if not st.session_state.get('show_fake_data_section', False) else None
 )
+
+# Initialize session state for fake data visibility
+if 'show_fake_data_section' not in st.session_state:
+    st.session_state.show_fake_data_section = False
+
+# Toggle the visibility when button is clicked
+if show_fake_data:
+    st.session_state.show_fake_data_section = not st.session_state.show_fake_data_section
+
+# Fake data generation section (conditionally displayed)
+if st.session_state.show_fake_data_section:
+    sidebar.markdown("---")    
+    # Input fields for fake data generation
+    num_lines = sidebar.number_input(
+        '📊 Number of lines',
+        min_value=10,
+        value=1000,
+        step=1000,
+        help="Number of rows to generate in the sample dataset"
+    )
+    
+    num_categories = sidebar.number_input(
+        '🏷️ Number of categories',
+        min_value=2,
+        max_value=20,
+        value=5,
+        step=1,
+        help="Number of different categories to include in the dataset"
+    )
+    
+    # Generate and load button
+    generate_button = sidebar.button(
+        '🎲 Generate and Load',
+        type="primary",
+        use_container_width=True,
+        help="Generate fake data with specified parameters and load it for analysis"
+    )
+else:
+    generate_button = False
+    # Default values for when fake data section is not visible
+    num_lines = 1000
+    num_categories = 5
 
 # Clear generated data button (only show if there's generated data)
 if 'generated_data' in st.session_state:
@@ -200,6 +145,7 @@ if generate_button:
     with st.spinner(f'🔄 Generating fake dataset of {num_lines:,} rows with {num_categories} categories...'):
         df = generate_sample(sample_size=num_lines, nb_categories=num_categories)
         st.session_state['generated_data'] = df
+        st.session_state['should_scroll_to_config'] = True
 
 # Check if we have generated data or uploaded file
 df = None
@@ -221,6 +167,7 @@ if file is not None:
         # Clear any previously generated data when file is uploaded
         if 'generated_data' in st.session_state:
             del st.session_state['generated_data']
+        st.session_state['should_scroll_to_config'] = True
     except Exception:
         st.error("❌ **Error processing file**")
         st.info("💡 Please ensure your data has the correct format and that columns are properly selected in Column Configuration.")
@@ -229,7 +176,13 @@ if file is not None:
 if df is not None:
     # Column selection with enhanced UI
     sidebar.markdown("---")
+    sidebar.markdown('<div id="column-config-anchor"></div>', unsafe_allow_html=True)
     sidebar.markdown("### ⚙️ Column Configuration")
+    
+    # Check if we should scroll to this section
+    if st.session_state.get('should_scroll_to_config', False):
+        scroll_to_column_config()
+        st.session_state['should_scroll_to_config'] = False
     
     columns = df.columns.tolist()
     
@@ -277,14 +230,7 @@ if df is not None:
     # Beta parameter with enhanced styling
     sidebar.markdown("---")
     sidebar.markdown("### 📊 Metrics Configuration")
-    sidebar.markdown("""
-    <div style='background: #fff3cd; padding: 0.8rem; border-radius: 6px; border-left: 3px solid #ffc107;'>
-        <small><strong>💡 Beta Parameter Guide:</strong><br>
-        • β < 1: Emphasizes Precision (false positives more heavily penalised)<br>
-        • β = 1: Balanced F1-Score<br>
-        • β > 1: Emphasizes Recall (false negatives more heavily penalised)</small>
-    </div>
-    """, unsafe_allow_html=True)
+    sidebar.markdown(BETA_ZONE, unsafe_allow_html=True)
     
     beta = sidebar.number_input(
         '⚖️ Beta value for F-β score', 
