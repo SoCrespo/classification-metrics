@@ -5,53 +5,10 @@ import streamlit.components.v1 as components
 from display_utils import display_matrix_and_metrics
 from generate_sample import generate_sample
 from style import BETA_ZONE, MAIN_CSS, SIDEBAR_CSS
+from scroll import scroll_to_column_config
 
 
-# Function to scroll to column configuration section
-def scroll_to_column_config():
-    """Scroll to the column configuration section in the sidebar"""
-    scroll_script = """
-    <script>
-    setTimeout(function() {
-        // Try multiple selectors to find the column configuration section
-        const selectors = [
-            '[data-testid="stSidebar"] #column-config-anchor',
-            '[data-testid="stSidebar"] h3:contains("⚙️ Column Configuration")',
-            '[data-testid="stSidebar"] h3:contains("Column Configuration")',
-            '[data-testid="stSidebar"] .element-container:has(h3:contains("Column Configuration"))'
-        ];
-        
-        let element = null;
-        for (let selector of selectors) {
-            try {
-                if (selector.includes(':contains')) {
-                    // Handle :contains selector manually
-                    const h3Elements = parent.document.querySelectorAll('[data-testid="stSidebar"] h3');
-                    for (let h3 of h3Elements) {
-                        if (h3.textContent.includes('Column Configuration')) {
-                            element = h3;
-                            break;
-                        }
-                    }
-                } else {
-                    element = parent.document.querySelector(selector);
-                }
-                if (element) break;
-            } catch(e) {
-                continue;
-            }
-        }
-        
-        if (element) {
-            element.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-    }, 500);
-    </script>
-    """
-    components.html(scroll_script, height=0)
+
 
 # Page configuration
 st.set_page_config(
@@ -181,7 +138,7 @@ if df is not None:
     
     # Check if we should scroll to this section
     if st.session_state.get('should_scroll_to_config', False):
-        scroll_to_column_config()
+        scroll_to_column_config(components)
         st.session_state['should_scroll_to_config'] = False
     
     columns = df.columns.tolist()
@@ -210,22 +167,11 @@ if df is not None:
         ['None'] + columns,
         help="Select a category column to analyze results by different groups"
     )
-
-    # Category filtering with enhanced UI
-    selected_cats = []
     if category_col != 'None':
-        unique_categories = sorted(df[category_col].unique())
-        sidebar.markdown("### 🏷️ Category Filtering")
-        selected_cats = sidebar.multiselect(
-            'Select specific categories to analyze', 
-            unique_categories,
-            help="Leave empty to analyze all categories"
-        )
-        
-        if selected_cats:
-            sidebar.success(f"📊 {len(selected_cats)} categories selected")
-        else:
-            sidebar.info("📈 All categories will be analyzed")
+        selected_cats = sorted(df[category_col].unique()) 
+    else:
+        selected_cats = None
+
 
     # Beta parameter with enhanced styling
     sidebar.markdown("---")
