@@ -2,6 +2,7 @@ import pandas as pd
 import streamlit as st
 
 from display_utils import display_matrix_and_metrics
+from generate_sample import generate_sample
 
 # Page configuration
 st.set_page_config(
@@ -144,125 +145,205 @@ file = sidebar.file_uploader(
     help="Upload a CSV or Excel file containing your predictions and ground truth data"
 )
 
-if file:
+# Fake data generation section
+sidebar.markdown("---")
+sidebar.markdown("""
+<div style='background: #e8f5e8; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;'>
+    <p style='margin: 0; color: #2c3e50;'>
+        🎲 <strong>Or Generate Fake Data</strong><br>
+        <small>Create sample data for testing</small>
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
+# Input fields for fake data generation
+num_lines = sidebar.number_input(
+    '📊 Number of lines',
+    min_value=10,
+    value=1000,
+    step=1000,
+    help="Number of rows to generate in the sample dataset"
+)
+
+num_categories = sidebar.number_input(
+    '🏷️ Number of categories',
+    min_value=2,
+    max_value=20,
+    value=5,
+    step=1,
+    help="Number of different categories to include in the dataset"
+)
+
+# Generate and load button
+generate_button = sidebar.button(
+    '🎲 Generate and Load',
+    type="secondary",
+    use_container_width=True,
+    help="Generate fake data with specified parameters and load it for analysis"
+)
+
+# Clear generated data button (only show if there's generated data)
+if 'generated_data' in st.session_state:
+    clear_button = sidebar.button(
+        '🗑️ Clear Generated Data',
+        type="secondary",
+        use_container_width=True,
+        help="Remove the currently generated data"
+    )
+    if clear_button:
+        del st.session_state['generated_data']
+        st.success("✅ Generated data cleared!")
+        st.rerun()
+
+# Handle fake data generation
+if generate_button:
+    with st.spinner(f'🔄 Generating fake dataset of {num_lines:,} rows with {num_categories} categories...'):
+        df = generate_sample(sample_size=num_lines, nb_categories=num_categories)
+        st.session_state['generated_data'] = df
+
+# Check if we have generated data or uploaded file
+df = None
+data_source = None
+
+# Handle generated data
+if 'generated_data' in st.session_state:
+    df = st.session_state['generated_data']
+    data_source = "Generated Data"
+
+# Handle uploaded file
+if file is not None:
     try:
         if file.name.endswith('.csv'):
             df = pd.read_csv(file)
         else:
             df = pd.read_excel(file)
-        
-        # Column selection with enhanced UI
-        sidebar.markdown("---")
-        sidebar.markdown("### ⚙️ Column Configuration")
-        
-        columns = df.columns.tolist()
-        
-        # Better column selectors with help text
-        doc_id_col = sidebar.selectbox(
-            '🔍 Document ID Column', 
-            columns,
-            help="Select the column containing unique identifiers for each document/sample"
-        )
-        
-        truth_col = sidebar.selectbox(
-            '✅ Ground Truth Column', 
-            columns,
-            help="Select the column containing the actual/true labels"
-        )
-        
-        pred_col = sidebar.selectbox(
-            '🎯 Predicted Values Column', 
-            columns,
-            help="Select the column containing the model's predictions"
-        )
-        
-        category_col = sidebar.selectbox(
-            '📂 Category Column (Optional)', 
-            ['None'] + columns,
-            help="Select a category column to analyze results by different groups"
-        )
+        data_source = "Uploaded File"
+        # Clear any previously generated data when file is uploaded
+        if 'generated_data' in st.session_state:
+            del st.session_state['generated_data']
+    except Exception:
+        st.error("❌ **Error processing file**")
+        st.info("💡 Please ensure your data has the correct format and that columns are properly selected in Column Configuration.")
+        df = None
 
-        # Category filtering with enhanced UI
-        if category_col != 'None':
-            unique_categories = sorted(df[category_col].unique())
-            sidebar.markdown("### 🏷️ Category Filtering")
-            selected_cats = sidebar.multiselect(
-                'Select specific categories to analyze', 
-                unique_categories,
-                help="Leave empty to analyze all categories"
-            )
-            
-            if selected_cats:
-                sidebar.success(f"📊 {len(selected_cats)} categories selected")
-            else:
-                sidebar.info("📈 All categories will be analyzed")
+if df is not None:
+    # Column selection with enhanced UI
+    sidebar.markdown("---")
+    sidebar.markdown("### ⚙️ Column Configuration")
+    
+    columns = df.columns.tolist()
+    
+    # Better column selectors with help text
+    doc_id_col = sidebar.selectbox(
+        '🔍 Document ID Column', 
+        columns,
+        help="Select the column containing unique identifiers for each document/sample"
+    )
+    
+    truth_col = sidebar.selectbox(
+        '✅ Ground Truth Column', 
+        columns,
+        help="Select the column containing the actual/true labels"
+    )
+    
+    pred_col = sidebar.selectbox(
+        '🎯 Predicted Values Column', 
+        columns,
+        help="Select the column containing the model's predictions"
+    )
+    
+    category_col = sidebar.selectbox(
+        '📂 Category Column (Optional)', 
+        ['None'] + columns,
+        help="Select a category column to analyze results by different groups"
+    )
 
-        # Beta parameter with enhanced styling
-        sidebar.markdown("---")
-        sidebar.markdown("### 📊 Metrics Configuration")
-        sidebar.markdown("""
-        <div style='background: #fff3cd; padding: 0.8rem; border-radius: 6px; border-left: 3px solid #ffc107;'>
-            <small><strong>💡 Beta Parameter Guide:</strong><br>
-            • β < 1: Emphasizes Precision (false positives more heavily penalised)<br>
-            • β = 1: Balanced F1-Score<br>
-            • β > 1: Emphasizes Recall (false negatives more heavily penalised)</small>
-        </div>
-        """, unsafe_allow_html=True)
+    # Category filtering with enhanced UI
+    selected_cats = []
+    if category_col != 'None':
+        unique_categories = sorted(df[category_col].unique())
+        sidebar.markdown("### 🏷️ Category Filtering")
+        selected_cats = sidebar.multiselect(
+            'Select specific categories to analyze', 
+            unique_categories,
+            help="Leave empty to analyze all categories"
+        )
         
-        beta = sidebar.number_input(
-            '⚖️ Beta value for F-β score', 
-            min_value=0.1, 
-            max_value=5.0, 
-            value=1.0, 
-            step=0.1,
-            help="Adjust the balance between precision and recall in the F-β score"
-        )
+        if selected_cats:
+            sidebar.success(f"📊 {len(selected_cats)} categories selected")
+        else:
+            sidebar.info("📈 All categories will be analyzed")
 
-        # Enhanced compute button
-        compute_button = sidebar.button(
-            '🚀 Compute Metrics',
-            type="primary",
-            use_container_width=True,
-            help="Click to calculate classification metrics and generate visualizations"
-        )
+    # Beta parameter with enhanced styling
+    sidebar.markdown("---")
+    sidebar.markdown("### 📊 Metrics Configuration")
+    sidebar.markdown("""
+    <div style='background: #fff3cd; padding: 0.8rem; border-radius: 6px; border-left: 3px solid #ffc107;'>
+        <small><strong>💡 Beta Parameter Guide:</strong><br>
+        • β < 1: Emphasizes Precision (false positives more heavily penalised)<br>
+        • β = 1: Balanced F1-Score<br>
+        • β > 1: Emphasizes Recall (false negatives more heavily penalised)</small>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    beta = sidebar.number_input(
+        '⚖️ Beta value for F-β score', 
+        min_value=0.1, 
+        max_value=5.0, 
+        value=1.0, 
+        step=0.1,
+        help="Adjust the balance between precision and recall in the F-β score"
+    )
 
-        if not compute_button:
-            # Success message with styling - only show when compute button not clicked
+    # Enhanced compute button
+    compute_button = sidebar.button(
+        '🚀 Compute Metrics',
+        type="primary",
+        use_container_width=True,
+        help="Click to calculate classification metrics and generate visualizations"
+    )
+
+    if not compute_button:
+        # Success message with styling - only show when compute button not clicked
+        if data_source == "Generated Data":
+            st.markdown("""
+            <div class='success-box'>
+                ✅ <strong>Fake data generated successfully!</strong><br>
+                <small>Sample data loaded and ready for analysis</small>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
             st.markdown("""
             <div class='success-box'>
                 ✅ <strong>File uploaded successfully!</strong><br>
                 <small>Data loaded and ready for analysis</small>
             </div>
             """, unsafe_allow_html=True)
-            
-            # Data preview with enhanced styling - only show when compute button not clicked
-            with st.expander("📊 **Data Preview**", expanded=True):
-                st.dataframe(
-                    df.head(10), 
-                    use_container_width=True,
-                    hide_index=True
-                )
-                st.caption(f"📈 Dataset contains **{len(df):,}** rows and **{len(df.columns)}** columns")
+        
+        # Data preview with enhanced styling - only show when compute button not clicked
+        with st.expander("📊 **Data Preview**", expanded=True):
+            st.dataframe(
+                df.head(10), 
+                use_container_width=True,
+                hide_index=True
+            )
+            st.caption(f"📈 Dataset contains **{len(df):,}** rows and **{len(df.columns)}** columns")
 
-        if compute_button:
-            with st.spinner('🔄 Computing classification metrics...'):
-                if category_col != 'None' and selected_cats:
-                    st.markdown("## 📊 **Category-wise Analysis Results**")
-                    
-                    # Create tabs for each category
-                    tabs = st.tabs([f"📂 {cat}" for cat in selected_cats])
-                    
-                    for i, cat in enumerate(selected_cats):
-                        with tabs[i]:
-                            filtered = df[df[category_col] == cat]
-                            display_matrix_and_metrics(filtered, truth_col, pred_col, beta, cat)
-                else:
-                    st.markdown("## 📊 **Overall Classification Results**")
-                    display_matrix_and_metrics(df, truth_col, pred_col, beta)
-                    
-    except Exception as e:
-        st.error(f"❌ **Error processing file**")
-        st.info("💡 Please ensure your data has the correct format and that columns are properly selected in Column Configuration.")
+    if compute_button:
+        with st.spinner('🔄 Computing classification metrics...'):
+            if category_col != 'None' and selected_cats:
+                st.markdown("## 📊 **Category-wise Analysis Results**")
+                
+                # Create tabs for each category
+                tabs = st.tabs([f"📂 {cat}" for cat in selected_cats])
+                
+                for i, cat in enumerate(selected_cats):
+                    with tabs[i]:
+                        filtered = df[df[category_col] == cat]
+                        display_matrix_and_metrics(filtered, truth_col, pred_col, beta, cat)
+            else:
+                st.markdown("## 📊 **Overall Classification Results**")
+                display_matrix_and_metrics(df, truth_col, pred_col, beta)
 
 else:
     # Add description when no file is uploaded
