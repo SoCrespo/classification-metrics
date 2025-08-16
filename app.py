@@ -4,11 +4,8 @@ import streamlit.components.v1 as components
 
 from display_utils import display_matrix_and_metrics
 from generate_sample import generate_sample
-from style import BETA_ZONE, MAIN_CSS, SIDEBAR_CSS
 from scroll import scroll_to_column_config
-
-
-
+from style import BETA_ZONE, MAIN_CSS, SIDEBAR_CSS
 
 # Page configuration
 st.set_page_config(
