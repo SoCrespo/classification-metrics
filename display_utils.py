@@ -41,8 +41,11 @@ def create_metric_card(title: str, value: float | int, color: str, description: 
 def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col: str, beta: float, category: str | None = None):
     """Display confusion matrix and metrics with enhanced professional styling."""
     
-    result: BinaryMetricsResult = compute_binary_metrics(filtered[truth_col], filtered[pred_col], beta)
-    
+    try:
+        result: BinaryMetricsResult = compute_binary_metrics(filtered[truth_col], filtered[pred_col], beta)
+    except ValueError as e:
+        st.error(f"❌ Error computing metrics: please ensure you have correctly configured the columns.")
+        st.stop()
     # Main content in two equal columns
     col2, col1 = st.columns([1, 1], gap="large")
     
