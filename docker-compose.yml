@@ -8,6 +8,8 @@ services:
       - STREAMLIT_SERVER_HEADLESS=true
       - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
       - STREAMLIT_SERVER_MAX_UPLOAD_SIZE=50
+      - UV_NO_CACHE=1
+      - MPLCONFIGDIR=/tmp/.matplotlib
     # Kubernetes-like resource constraints
     deploy:
       resources:
@@ -18,7 +20,7 @@ services:
           memory: 256M      # K8s memory request
           cpus: '0.25'      # K8s CPU request (250m)
       restart_policy:
-        condition: any
+        condition: on-failure
         delay: 5s
         max_attempts: 3
     # Kubernetes-like restart policy

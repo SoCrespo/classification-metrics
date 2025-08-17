@@ -4,8 +4,15 @@ import streamlit.components.v1 as components
 
 from utils.display_utils import display_matrix_and_metrics
 from utils.generate_sample import generate_sample
+from utils.logging_config import get_logger, setup_logging
 from utils.scroll import scroll_to_column_config
 from utils.style import BETA_ZONE, MAIN_CSS, SIDEBAR_CSS
+
+# Set up centralized logging configuration
+setup_logging()
+logger = get_logger(__name__)
+
+
 
 # Page configuration
 st.set_page_config(
@@ -45,6 +52,7 @@ if 'show_fake_data_section' not in st.session_state:
 
 # Toggle the visibility when button is clicked
 if show_fake_data:
+    logger.info("Toggling fake data section visibility")
     st.session_state.show_fake_data_section = not st.session_state.show_fake_data_section
 
 # Fake data generation section (conditionally displayed)
@@ -97,10 +105,12 @@ if 'generated_data' in st.session_state:
 
 # Handle fake data generation
 if generate_button:
+    logger.info(f"Generating fake dataset with {num_lines:,} rows and {num_categories} categories")
     with st.spinner(f'🔄 Generating fake dataset of {num_lines:,} rows with {num_categories} categories...'):
         df = generate_sample(sample_size=num_lines, nb_categories=num_categories)
         st.session_state['generated_data'] = df
         st.session_state['should_scroll_to_config'] = True
+    logger.info("Fake data generated successfully")
 
 # Check if we have generated data or uploaded file
 df = None
@@ -113,10 +123,13 @@ if 'generated_data' in st.session_state:
 
 # Handle uploaded file
 if file is not None:
+    logger.info(f"Processing uploaded file: {file.name}")
     try:
         if file.name.endswith('.csv'):
+            logger.info("Reading CSV file")
             df = pd.read_csv(file)
         else:
+            logger.info("Reading Excel file")
             df = pd.read_excel(file)
         data_source = "Uploaded File"
         # Clear any previously generated data when file is uploaded
@@ -221,6 +234,7 @@ if df is not None:
 
     if compute_button:
         # Store computed state in session
+        logger.info("Computing metrics...")
         st.session_state['metrics_computed'] = True
         st.session_state['df_computed'] = df
         st.session_state['truth_col_computed'] = truth_col
@@ -235,10 +249,15 @@ if df is not None:
         # Get the stored values
         df_stored = st.session_state['df_computed']
         truth_col_stored = st.session_state['truth_col_computed']
+        logger.info(f"Using ground truth column: {truth_col_stored}")
         pred_col_stored = st.session_state['pred_col_computed']
+        logger.info(f"Using predicted column: {pred_col_stored}")
         beta_stored = st.session_state['beta_computed']
+        logger.info(f"Using beta value: {beta_stored}")
         category_col_stored = st.session_state['category_col_computed']
+        logger.info(f"Using category column: {category_col_stored}")
         selected_cats_stored = st.session_state['selected_cats_computed']
+        logger.info(f"Selected categories: {selected_cats_stored}")
         
         if category_col_stored != 'None' and selected_cats_stored:
             st.markdown("## 📊 **Category-wise Analysis Results**")
@@ -252,7 +271,7 @@ if df is not None:
                 help="Choose which category to analyze. Select 'All Categories' for overall results.",
                 key="category_selector"
             )
-            
+            logger.info(f"Selected category for analysis: {selected_category}")
             # Display results based on selection
             if selected_category == "📈 All Categories":
                 display_matrix_and_metrics(df_stored, truth_col_stored, pred_col_stored, beta_stored, "All Categories")

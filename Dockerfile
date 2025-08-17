@@ -10,7 +10,9 @@ RUN pip install uv
 # Copy dependency files
 COPY pyproject.toml uv.lock ./
 
-COPY 
+COPY app.py ./
+
+COPY utils ./utils
 
 # Install Python dependencies using uv and clean up cache
 RUN uv sync --frozen --no-dev && \
@@ -27,7 +29,9 @@ ENV STREAMLIT_SERVER_HEADLESS=true \
     STREAMLIT_SERVER_MAX_UPLOAD_SIZE=50 \
     STREAMLIT_BROWSER_GATHER_USAGE_STATS=false \
     PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
+    PYTHONDONTWRITEBYTECODE=1 \
+    UV_NO_CACHE=1 \
+    MPLCONFIGDIR=/tmp/.matplotlib
 
 # Health check to ensure the app is running
 HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health

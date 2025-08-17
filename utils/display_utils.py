@@ -1,9 +1,13 @@
+from datetime import datetime
+
 import pandas as pd
 import streamlit as st
 
+from .logging_config import get_logger
 from .metrics import BinaryMetricsResult, compute_binary_metrics
 from .plots import plot_confusion_matrix
 
+logger = get_logger(__name__)
 
 def create_metric_card(title: str, value: float | int, color: str, description: str = "", format_as_percentage: bool = False):
     """Create a professional metric card with styling."""
@@ -14,7 +18,6 @@ def create_metric_card(title: str, value: float | int, color: str, description: 
         formatted_value = f"{value * 100:.1f}%"
     else:
         formatted_value = f"{value:.3f}"
-    
     return f"""
     <div style='
         background: linear-gradient(135deg, {color}20, {color}10);
@@ -40,11 +43,16 @@ def create_metric_card(title: str, value: float | int, color: str, description: 
 
 def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col: str, beta: float, category: str | None = None):
     """Display confusion matrix and metrics with enhanced professional styling."""
+    logger.info("Displaying matrix and metrics")
     with st.spinner("🔄 Calculating metrics and generating visualizations..."):
         try:
+            start = datetime.now()
+            logger.info("Computing metrics...")
             result: BinaryMetricsResult = compute_binary_metrics(filtered[truth_col], filtered[pred_col], beta)
+            logger.info(f"Metrics computed successfully in {(datetime.now() - start).total_seconds():.2f} seconds")
         except ValueError as e:
-            st.error(f"❌ Error computing metrics: please ensure you have correctly configured the 'ground truth' and 'predicted' columns.")
+            logger.error(f"Error computing metrics: {e}")
+            st.error("❌ Error computing metrics: please ensure you have correctly configured the 'ground truth' and 'predicted' columns.")
             st.stop()
         
         # Main content in two equal columns
@@ -53,6 +61,7 @@ def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col:
         with confusion_matrix_column:
             
             # Enhanced confusion matrix
+            logger.info("Plotting confusion matrix plot")
             fig = plot_confusion_matrix(result.confusion_matrix, [0, 1])
             st.pyplot(fig, use_container_width=True)
             
@@ -75,6 +84,7 @@ def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col:
             }
             
             matrix_df = pd.DataFrame(matrix_data)
+            logger.info("Displaying confusion matrix DataFrame")
             st.dataframe(
                 matrix_df,
                 use_container_width=True,
@@ -87,7 +97,7 @@ def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col:
             )
         
         with metrics_column:
-            
+            logger.info("Creating metrics cards")
             # Sample count card (full width)
             total_samples = len(filtered)
             accuracy = (tp + tn) / total_samples
@@ -140,5 +150,5 @@ def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col:
                     format_as_percentage=True
                 )
                 st.markdown(fbeta_html, unsafe_allow_html=True)
-        
+            logger.info("Metrics cards created successfully")
         st.markdown("---")
