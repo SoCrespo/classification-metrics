@@ -2,10 +2,10 @@ import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
 
-from display_utils import display_matrix_and_metrics
-from generate_sample import generate_sample
-from scroll import scroll_to_column_config
-from style import BETA_ZONE, MAIN_CSS, SIDEBAR_CSS
+from utils.display_utils import display_matrix_and_metrics
+from utils.generate_sample import generate_sample
+from utils.scroll import scroll_to_column_config
+from utils.style import BETA_ZONE, MAIN_CSS, SIDEBAR_CSS
 
 # Page configuration
 st.set_page_config(
@@ -54,6 +54,7 @@ if st.session_state.show_fake_data_section:
     num_lines = sidebar.number_input(
         '📊 Number of lines',
         min_value=10,
+        max_value=1_000_000,
         value=1000,
         step=1000,
         help="Number of rows to generate in the sample dataset"
@@ -230,39 +231,39 @@ if df is not None:
 
     # Show results if metrics have been computed
     if st.session_state.get('metrics_computed', False):
-        with st.spinner('🔄 Computing classification metrics...'):
-            # Get the stored values
-            df_stored = st.session_state['df_computed']
-            truth_col_stored = st.session_state['truth_col_computed']
-            pred_col_stored = st.session_state['pred_col_computed']
-            beta_stored = st.session_state['beta_computed']
-            category_col_stored = st.session_state['category_col_computed']
-            selected_cats_stored = st.session_state['selected_cats_computed']
+
+        # Get the stored values
+        df_stored = st.session_state['df_computed']
+        truth_col_stored = st.session_state['truth_col_computed']
+        pred_col_stored = st.session_state['pred_col_computed']
+        beta_stored = st.session_state['beta_computed']
+        category_col_stored = st.session_state['category_col_computed']
+        selected_cats_stored = st.session_state['selected_cats_computed']
+        
+        if category_col_stored != 'None' and selected_cats_stored:
+            st.markdown("## 📊 **Category-wise Analysis Results**")
             
-            if category_col_stored != 'None' and selected_cats_stored:
-                st.markdown("## 📊 **Category-wise Analysis Results**")
-                
-                # Create a selectbox for category selection
-                category_options = ["📈 All Categories"] + [f"📂 {cat}" for cat in selected_cats_stored]
-                selected_category = st.selectbox(
-                    "🔍 **Select Category to Analyze:**",
-                    options=category_options,
-                    index=0,
-                    help="Choose which category to analyze. Select 'All Categories' for overall results.",
-                    key="category_selector"
-                )
-                
-                # Display results based on selection
-                if selected_category == "📈 All Categories":
-                    display_matrix_and_metrics(df_stored, truth_col_stored, pred_col_stored, beta_stored, "All Categories")
-                else:
-                    # Extract category name (remove emoji prefix)
-                    cat_name = selected_category.replace("📂 ", "")
-                    filtered = df_stored[df_stored[category_col_stored] == cat_name]
-                    display_matrix_and_metrics(filtered, truth_col_stored, pred_col_stored, beta_stored, cat_name)
+            # Create a selectbox for category selection
+            category_options = ["📈 All Categories"] + [f"📂 {cat}" for cat in selected_cats_stored]
+            selected_category = st.selectbox(
+                "🔍 **Select Category to Analyze:**",
+                options=category_options,
+                index=0,
+                help="Choose which category to analyze. Select 'All Categories' for overall results.",
+                key="category_selector"
+            )
+            
+            # Display results based on selection
+            if selected_category == "📈 All Categories":
+                display_matrix_and_metrics(df_stored, truth_col_stored, pred_col_stored, beta_stored, "All Categories")
             else:
-                st.markdown("## 📊 **Overall Classification Results**")
-                display_matrix_and_metrics(df_stored, truth_col_stored, pred_col_stored, beta_stored)
+                # Extract category name (remove emoji prefix)
+                cat_name = selected_category.replace("📂 ", "")
+                filtered = df_stored[df_stored[category_col_stored] == cat_name]
+                display_matrix_and_metrics(filtered, truth_col_stored, pred_col_stored, beta_stored, cat_name)
+        else:
+            st.markdown("## 📊 **Overall Classification Results**")
+            display_matrix_and_metrics(df_stored, truth_col_stored, pred_col_stored, beta_stored)
 
 else:
     # Add description when no file is uploaded

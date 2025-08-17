@@ -1,0 +1,50 @@
+services:
+  classification-metrics:
+    build: .
+    container_name: classification-metrics-pod
+    ports:
+      - "8501:8501"
+    environment:
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+      - STREAMLIT_SERVER_MAX_UPLOAD_SIZE=50
+    # Kubernetes-like resource constraints
+    deploy:
+      resources:
+        limits:
+          memory: 512M      # K8s memory limit
+          cpus: '0.5'       # K8s CPU limit (500m)
+        reservations:
+          memory: 256M      # K8s memory request
+          cpus: '0.25'      # K8s CPU request (250m)
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+    # Kubernetes-like restart policy
+    restart: unless-stopped
+    # Health check (simulates K8s liveness/readiness probes)
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s          # K8s periodSeconds
+      timeout: 10s           # K8s timeoutSeconds  
+      retries: 3             # K8s failureThreshold
+      start_period: 60s      # K8s initialDelaySeconds
+    # Security context (simulates K8s securityContext)
+    security_opt:
+      - no-new-privileges:true
+    user: "1000:1000"        # Non-root user (like K8s runAsUser)
+    # Network isolation
+    networks:
+      - k8s-sim
+    # Logging (simulates K8s log collection)
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  k8s-sim:
+    driver: bridge
+    name: k8s-simulation

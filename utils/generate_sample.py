@@ -24,5 +24,3 @@ def generate_sample(sample_size:int=10000, nb_categories:int=7):
     })
 
     return pd.DataFrame(data)
-
-random.random()
