@@ -64,16 +64,18 @@ def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col:
             logger.info("Displaying styled HTML confusion matrix")
             cm = result.confusion_matrix
             tn, fp, fn, tp = cm[0][0], cm[0][1], cm[1][0], cm[1][1]
-            st.markdown("### Confusion Matrix (Grid)")
+            st.markdown("### Confusion Matrix")
             confusion_matrix_html = f'''
             <style>
             .cm-matrix {{
                 border-collapse: collapse;
-                margin: 0 auto;
+                margin: 0;
+                width: 100%;
+                table-layout: fixed;
             }}
-            .cm-matrix td, .cm-matrix th {{
-                width: 80px;
-                height: 80px;
+            .cm-matrix td {{
+                width: 50%;
+                aspect-ratio: 1 / 1;
                 text-align: center;
                 vertical-align: middle;
                 font-size: 1.2rem;
@@ -81,26 +83,20 @@ def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col:
                 border: 1px solid #bbb;
                 padding: 0;
                 margin: 0;
+                box-sizing: border-box;
             }}
             .cm-tn, .cm-tp {{ background: #eafaf1; color: #218c4a; }}
             .cm-fp, .cm-fn {{ background: #fdeaea; color: #c0392b; }}
-            .cm-label {{ background: #f4f4f4; color: #555; font-size: 1rem; font-weight: 600; border: none; }}
+            .cm-desc {{ font-size: 0.95rem; font-weight: 400; color: #555; margin-top: 0.3em; display: block; }}
             </style>
             <table class="cm-matrix">
                 <tr>
-                    <th class="cm-label"></th>
-                    <th class="cm-label">Pred 0</th>
-                    <th class="cm-label">Pred 1</th>
+                    <td class="cm-tn">True Negative<br>{int(tn)}<span class="cm-desc">Engine rejected<br>wrong document</span></td>
+                    <td class="cm-fp">False Positive<br>{int(fp)}<span class="cm-desc">Engine accepted<br>wrong document</span></td>
                 </tr>
                 <tr>
-                    <th class="cm-label">True 0</th>
-                    <td class="cm-tn">TN<br>{int(tn)}</td>
-                    <td class="cm-fp">FP<br>{int(fp)}</td>
-                </tr>
-                <tr>
-                    <th class="cm-label">True 1</th>
-                    <td class="cm-fn">FN<br>{int(fn)}</td>
-                    <td class="cm-tp">TP<br>{int(tp)}</td>
+                    <td class="cm-fn">False Negative<br>{int(fn)}<span class="cm-desc">Engine rejected<br>good document</span></td>
+                    <td class="cm-tp">True Positive<br>{int(tp)}<span class="cm-desc">Engine accepted<br>good document</span></td>
                 </tr>
             </table>
             '''
@@ -110,32 +106,8 @@ def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col:
             cm = result.confusion_matrix
             tn, fp, fn, tp = cm[0][0], cm[0][1], cm[1][0], cm[1][1]
             
-            st.markdown("### 📋 **Matrix Breakdown**")
             
-            # Create a small interpretation table
-            matrix_data = {
-                "Metric": ["True Negatives (TN)", "False Positives (FP)", "False Negatives (FN)", "True Positives (TP)"],
-                "Count": [int(tn), int(fp), int(fn), int(tp)],
-                "Description": [
-                    "Correctly rejected (predicted as wrong category)",
-                    "Incorrectly accepted (predicted as good category)", 
-                    "Incorrectly rejected (predicted as wrong category)",
-                    "Correctly accepted (predicted as good category)"
-                ]
-            }
             
-            matrix_df = pd.DataFrame(matrix_data)
-            logger.info("Displaying confusion matrix DataFrame")
-            st.dataframe(
-                matrix_df,
-                use_container_width=True,
-                hide_index=True,
-                column_config={
-                    "Metric": st.column_config.TextColumn("Metric", width="medium"),
-                    "Count": st.column_config.NumberColumn("Count", width="small"),
-                    "Description": st.column_config.TextColumn("Description", width="large")
-                }
-            )
         
         with metrics_column:
             logger.info("Creating metrics cards")
