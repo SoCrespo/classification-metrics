@@ -14,18 +14,19 @@ class BinaryMetricsResult:
 
 
 def compute_binary_metrics(
-    y_true,
-    y_pred,
+    y_true: list[bool | int],
+    y_pred: list[bool | int],
     beta: float = 1.0
 ) -> BinaryMetricsResult:
     """
     Compute confusion matrix, precision, recall, and f-beta score for binary classification.
     y_true and y_pred should be boolean or 0/1 arrays/Series.
     """
+    
     cm = confusion_matrix(y_true, y_pred)
-    precision = precision_score(y_true, y_pred, zero_division=0)
-    recall = recall_score(y_true, y_pred, zero_division=0)
-    fbeta = fbeta_score(y_true, y_pred, beta=beta, zero_division=0)
+    precision = float(precision_score(y_true, y_pred, zero_division=0))
+    recall = float(recall_score(y_true, y_pred, zero_division=0))
+    fbeta = float(fbeta_score(y_true, y_pred, beta=beta, zero_division=0))
     return BinaryMetricsResult(
         confusion_matrix=cm.tolist(),
         precision=precision,

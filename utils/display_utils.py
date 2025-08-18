@@ -1,3 +1,4 @@
+# type: ignore
 from datetime import datetime
 
 import pandas as pd
@@ -5,7 +6,6 @@ import streamlit as st
 
 from .logging_config import get_logger
 from .metrics import BinaryMetricsResult, compute_binary_metrics
-from .plots import plot_confusion_matrix
 
 logger = get_logger(__name__)
 
@@ -48,7 +48,7 @@ def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col:
         try:
             start = datetime.now()
             logger.info("Computing metrics...")
-            result: BinaryMetricsResult = compute_binary_metrics(filtered[truth_col], filtered[pred_col], beta)
+            result: BinaryMetricsResult = compute_binary_metrics(filtered[truth_col].to_list(), filtered[pred_col].to_list(), beta)
             logger.info(f"Metrics computed successfully in {(datetime.now() - start).total_seconds():.2f} seconds")
         except ValueError as e:
             logger.error(f"Error computing metrics: {e}")

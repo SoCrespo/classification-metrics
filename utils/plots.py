@@ -1,3 +1,4 @@
+# type: ignore
 from typing import Any
 
 import matplotlib.pyplot as plt
@@ -5,11 +6,11 @@ import numpy as np
 import seaborn as sns
 
 
-def plot_confusion_matrix(cm, categories: list[Any]):
+def plot_confusion_matrix(cm: list[list[int]], categories: list[Any]):
     """Create a professional-looking confusion matrix plot."""
     
     # Set up the figure with better styling
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(8, 6)) 
     
     # Set style for professional appearance
     sns.set_style("whitegrid")
@@ -21,7 +22,7 @@ def plot_confusion_matrix(cm, categories: list[Any]):
     })
     
     # Create the heatmap with enhanced styling
-    ax = sns.heatmap(
+    ax = sns.heatmap( 
         cm, 
         annot=True, 
         fmt='d', 
@@ -36,7 +37,7 @@ def plot_confusion_matrix(cm, categories: list[Any]):
     )
     
     # Enhance the plot aesthetics
-    plt.xlabel('Predicted Labels', fontsize=13, fontweight='bold', labelpad=10)
+    plt.xlabel('Predicted Labels', fontsize=13, fontweight='bold', labelpad=10) 
     plt.ylabel('True Labels', fontsize=13, fontweight='bold', labelpad=10)
     
     # Customize tick labels

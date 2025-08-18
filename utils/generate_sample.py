@@ -16,7 +16,7 @@ def generate_sample(sample_size:int=10000, nb_categories:int=7):
         ground_truth = random.choice([0, 1])
         # Simulate prediction with probability of it being same as ground truth = performance_for_category
         prediction = ground_truth if bool(random.random() < performance_for_category) else int(not ground_truth)
-        data.append({
+        data.append({ # type: ignore
             "id": str(uuid.uuid4()),
             "category": category,
             "is_category_real_value": ground_truth,

@@ -127,10 +127,10 @@ if file is not None:
     try:
         if file.name.endswith('.csv'):
             logger.info("Reading CSV file")
-            df = pd.read_csv(file)
+            df = pd.read_csv(file) # type: ignore
         else:
             logger.info("Reading Excel file")
-            df = pd.read_excel(file)
+            df = pd.read_excel(file) # type: ignore
         data_source = "Uploaded File"
         # Clear any previously generated data when file is uploaded
         if 'generated_data' in st.session_state:
@@ -225,7 +225,7 @@ if df is not None:
         
         # Data preview with enhanced styling - only show when compute button not clicked and metrics not computed
         with st.expander("📊 **Data Preview**", expanded=True):
-            st.dataframe(
+            st.dataframe( # type: ignore
                 df.head(10), 
                 use_container_width=True,
                 hide_index=True

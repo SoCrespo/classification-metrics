@@ -1,5 +1,7 @@
+from typing import Any
+
 # Function to scroll to column configuration section
-def scroll_to_column_config(components):
+def scroll_to_column_config(components: Any) -> None:
     """Scroll to the column configuration section in the sidebar"""
     scroll_script = """
     <script>
