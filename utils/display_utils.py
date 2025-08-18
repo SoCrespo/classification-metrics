@@ -60,10 +60,51 @@ def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col:
         
         with confusion_matrix_column:
             
-            # Enhanced confusion matrix
-            logger.info("Plotting confusion matrix plot")
-            fig = plot_confusion_matrix(result.confusion_matrix, [0, 1])
-            st.pyplot(fig, use_container_width=True)
+            # Styled HTML confusion matrix (2x2 grid, colored, square cells)
+            logger.info("Displaying styled HTML confusion matrix")
+            cm = result.confusion_matrix
+            tn, fp, fn, tp = cm[0][0], cm[0][1], cm[1][0], cm[1][1]
+            st.markdown("### Confusion Matrix (Grid)")
+            confusion_matrix_html = f'''
+            <style>
+            .cm-matrix {{
+                border-collapse: collapse;
+                margin: 0 auto;
+            }}
+            .cm-matrix td, .cm-matrix th {{
+                width: 80px;
+                height: 80px;
+                text-align: center;
+                vertical-align: middle;
+                font-size: 1.2rem;
+                font-weight: bold;
+                border: 1px solid #bbb;
+                padding: 0;
+                margin: 0;
+            }}
+            .cm-tn, .cm-tp {{ background: #eafaf1; color: #218c4a; }}
+            .cm-fp, .cm-fn {{ background: #fdeaea; color: #c0392b; }}
+            .cm-label {{ background: #f4f4f4; color: #555; font-size: 1rem; font-weight: 600; border: none; }}
+            </style>
+            <table class="cm-matrix">
+                <tr>
+                    <th class="cm-label"></th>
+                    <th class="cm-label">Pred 0</th>
+                    <th class="cm-label">Pred 1</th>
+                </tr>
+                <tr>
+                    <th class="cm-label">True 0</th>
+                    <td class="cm-tn">TN<br>{int(tn)}</td>
+                    <td class="cm-fp">FP<br>{int(fp)}</td>
+                </tr>
+                <tr>
+                    <th class="cm-label">True 1</th>
+                    <td class="cm-fn">FN<br>{int(fn)}</td>
+                    <td class="cm-tp">TP<br>{int(tp)}</td>
+                </tr>
+            </table>
+            '''
+            st.markdown(confusion_matrix_html, unsafe_allow_html=True)
             
             # Confusion matrix interpretation
             cm = result.confusion_matrix
