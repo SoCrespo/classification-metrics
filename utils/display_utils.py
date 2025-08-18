@@ -41,7 +41,7 @@ def create_metric_card(title: str, value: float | int, color: str, description: 
     """
 
 
-def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col: str, beta: float, category: str | None = None):
+def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col: str, beta: float, category: str | None = None, id_col: str | None = None):
     """Display confusion matrix and metrics with enhanced professional styling."""
     logger.info("Displaying matrix and metrics")
     with st.spinner("🔄 Calculating metrics and generating visualizations..."):
@@ -171,3 +171,25 @@ def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col:
                 st.markdown(fbeta_html, unsafe_allow_html=True)
             logger.info("Metrics cards created successfully")
         st.markdown("---")
+
+        # Display FP and FN cases in a DataFrame below the results
+        fp_mask = (filtered[truth_col] == 0) & (filtered[pred_col] == 1)
+        fn_mask = (filtered[truth_col] == 1) & (filtered[pred_col] == 0)
+        fp_fn_df = filtered[fp_mask | fn_mask].copy()
+        # Add a column to indicate FP or FN
+        fp_fn_df["error type"] = fp_fn_df.apply(
+            lambda row: "FP" if (row[truth_col] == 0 and row[pred_col] == 1) else "FN", axis=1
+        )
+        # Dynamically select columns that exist, using id_col if provided
+        base_cols = [pred_col, truth_col, "error type"]
+        extra_cols = []
+        if id_col and id_col in fp_fn_df.columns:
+            extra_cols.append(id_col)
+        if "category" in fp_fn_df.columns:
+            extra_cols.append("category")
+        display_cols = extra_cols + base_cols
+        display_df = fp_fn_df[display_cols].rename(columns={pred_col: "prediction", truth_col: "truth"})
+        if id_col:
+            display_df = display_df.rename(columns={id_col: "id"})
+        st.markdown("#### False Positives (FP) and False Negatives (FN) Details")
+        st.dataframe(display_df, use_container_width=True, hide_index=True)

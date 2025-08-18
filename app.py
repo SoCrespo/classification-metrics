@@ -274,15 +274,15 @@ if df is not None:
             logger.info(f"Selected category for analysis: {selected_category}")
             # Display results based on selection
             if selected_category == "📈 All Categories":
-                display_matrix_and_metrics(df_stored, truth_col_stored, pred_col_stored, beta_stored, "All Categories")
+                display_matrix_and_metrics(df_stored, truth_col_stored, pred_col_stored, beta_stored, "All Categories", id_col=doc_id_col)
             else:
                 # Extract category name (remove emoji prefix)
                 cat_name = selected_category.replace("📂 ", "")
                 filtered = df_stored[df_stored[category_col_stored] == cat_name]
-                display_matrix_and_metrics(filtered, truth_col_stored, pred_col_stored, beta_stored, cat_name)
+                display_matrix_and_metrics(filtered, truth_col_stored, pred_col_stored, beta_stored, cat_name, id_col=doc_id_col)
         else:
             st.markdown("## 📊 **Overall Classification Results**")
-            display_matrix_and_metrics(df_stored, truth_col_stored, pred_col_stored, beta_stored)
+            display_matrix_and_metrics(df_stored, truth_col_stored, pred_col_stored, beta_stored, id_col=doc_id_col)
 
 else:
     # Add description when no file is uploaded
