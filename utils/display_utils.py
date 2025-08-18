@@ -65,6 +65,11 @@ def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col:
             cm = result.confusion_matrix
             tn, fp, fn, tp = cm[0][0], cm[0][1], cm[1][0], cm[1][1]
             st.markdown("### Confusion Matrix")
+            total = int(tn) + int(fp) + int(fn) + int(tp)
+            tn_pct = f"{(tn/total*100):.1f}%" if total else "0.0%"
+            fp_pct = f"{(fp/total*100):.1f}%" if total else "0.0%"
+            fn_pct = f"{(fn/total*100):.1f}%" if total else "0.0%"
+            tp_pct = f"{(tp/total*100):.1f}%" if total else "0.0%"
             confusion_matrix_html = f'''
             <style>
             .cm-matrix {{
@@ -88,15 +93,16 @@ def display_matrix_and_metrics(filtered: pd.DataFrame, truth_col: str, pred_col:
             .cm-tn, .cm-tp {{ background: #eafaf1; color: #218c4a; }}
             .cm-fp, .cm-fn {{ background: #fdeaea; color: #c0392b; }}
             .cm-desc {{ font-size: 0.95rem; font-weight: 400; color: #555; margin-top: 0.3em; display: block; }}
+            .cm-pct {{ font-size: 1.1rem; font-weight: 500; color: #888; display: block; margin-top: 0.1em; }}
             </style>
             <table class="cm-matrix">
                 <tr>
-                    <td class="cm-tn">True Negative<br>{int(tn)}<span class="cm-desc">Engine rejected<br>wrong document</span></td>
-                    <td class="cm-fp">False Positive<br>{int(fp)}<span class="cm-desc">Engine accepted<br>wrong document</span></td>
+                    <td class="cm-tn"><br>True Negative<br>{tn_pct} ({int(tn)} docs)<span class="cm-desc">Engine rejected<br>a bad document</span><br></td>
+                    <td class="cm-fp"><br>False Positive<br>{fp_pct} ({int(fp)} docs)<span class="cm-desc">Engine accepted<br>a bad document</span><br></td>
                 </tr>
                 <tr>
-                    <td class="cm-fn">False Negative<br>{int(fn)}<span class="cm-desc">Engine rejected<br>good document</span></td>
-                    <td class="cm-tp">True Positive<br>{int(tp)}<span class="cm-desc">Engine accepted<br>good document</span></td>
+                    <td class="cm-fn"><br>False Negative<br>{fn_pct} ({int(fn)} docs)<span class="cm-desc">Engine rejected<br>a good document</span><br></td>
+                    <td class="cm-tp"><br>True Positive<br>{tp_pct} ({int(tp)} docs)<span class="cm-desc">Engine accepted<br>a good document</span><br></td>
                 </tr>
             </table>
             '''
